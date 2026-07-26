@@ -42,6 +42,8 @@ export default function Home() {
     },
   });
 
+  const { onAnimationStart: _, ...dropzoneProps } = getRootProps();
+
   const removeFile = (name: string) => {
     setFiles((files) => files.filter((f) => f.name !== name));
   };
@@ -121,7 +123,7 @@ export default function Home() {
 
         {/* Dropzone Area */}
         <motion.div 
-          {...getRootProps()}
+          {...dropzoneProps}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           className={`w-full p-12 rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer backdrop-blur-sm flex flex-col items-center justify-center gap-4

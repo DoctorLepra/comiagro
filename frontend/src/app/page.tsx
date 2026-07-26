@@ -456,8 +456,8 @@ export default function Home() {
                 {/* Tab 1: Summary */}
                 {activeTab === "summary" && (
                   <div className="flex flex-col gap-6">
-                    {/* Header Party Card */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Header Party Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className={`p-4 rounded-2xl border flex flex-col gap-1 transition-colors ${
                         isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
                       }`}>
@@ -472,10 +472,20 @@ export default function Home() {
                         isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
                       }`}>
                         <span className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
-                          <Receipt className={`w-3 h-3 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} /> Fecha de Emisión
+                          <Building2 className={`w-3 h-3 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} /> Adquirente / Cliente
+                        </span>
+                        <p className={`text-sm font-semibold truncate ${isDark ? "text-white" : "text-slate-900"}`}>{currentResult.invoiceData?.customerName || "Consumidor Final"}</p>
+                        <p className={`text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>NIT/Doc: {currentResult.invoiceData?.customerNit || "222222222222"}</p>
+                      </div>
+
+                      <div className={`p-4 rounded-2xl border flex flex-col gap-1 transition-colors ${
+                        isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
+                      }`}>
+                        <span className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
+                          <Receipt className={`w-3 h-3 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} /> Fecha de Emisión
                         </span>
                         <p className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{currentResult.invoiceData?.issueDate}</p>
-                        <p className={`text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Estado: Validada por DIAN</p>
+                        <p className={`text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Estado: Validada DIAN</p>
                       </div>
                     </div>
 

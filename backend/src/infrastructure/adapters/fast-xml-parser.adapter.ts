@@ -84,13 +84,14 @@ export class FastXmlParserAdapter implements XmlParserPort {
       const taxAmount = parseFloat(taxTotal.TaxAmount?.['#text'] || taxTotal.TaxAmount || '0');
 
       const supplierParty = invoiceNode.AccountingSupplierParty?.Party || {};
-      const companyName = 
+      const rawCompanyName = 
         supplierParty.PartyName?.Name || 
         supplierParty.PartyTaxScheme?.RegistrationName || 
         supplierParty.PartyLegalEntity?.RegistrationName || 
         'Desconocido';
-      
-      // La DIAN ubica el NIT en cbc:CompanyID dentro de PartyTaxScheme o PartyLegalEntity, o en PartyIdentification.ID
+
+      const companyName = typeof rawCompanyName === 'object' ? (rawCompanyName?.['#text'] || rawCompanyName?.['#cdata'] || 'Desconocido') : String(rawCompanyName);
+
       const companyIdNode = 
         supplierParty.PartyTaxScheme?.CompanyID || 
         supplierParty.PartyLegalEntity?.CompanyID || 
@@ -98,6 +99,24 @@ export class FastXmlParserAdapter implements XmlParserPort {
 
       const rawNit = typeof companyIdNode === 'object' ? (companyIdNode?.['#text'] || companyIdNode?.['#cdata'] || '') : companyIdNode;
       const companyNit = rawNit ? String(rawNit).trim() : '000000000';
+
+      // Datos del Cliente / Adquirente (AccountingCustomerParty)
+      const customerParty = invoiceNode.AccountingCustomerParty?.Party || {};
+      const rawCustomerName = 
+        customerParty.PartyName?.Name || 
+        customerParty.PartyTaxScheme?.RegistrationName || 
+        customerParty.PartyLegalEntity?.RegistrationName || 
+        'Consumidor Final / Desconocido';
+
+      const customerName = typeof rawCustomerName === 'object' ? (rawCustomerName?.['#text'] || rawCustomerName?.['#cdata'] || 'Consumidor Final / Desconocido') : String(rawCustomerName);
+
+      const customerIdNode = 
+        customerParty.PartyTaxScheme?.CompanyID || 
+        customerParty.PartyLegalEntity?.CompanyID || 
+        customerParty.PartyIdentification?.ID;
+
+      const rawCustomerNit = typeof customerIdNode === 'object' ? (customerIdNode?.['#text'] || customerIdNode?.['#cdata'] || '') : customerIdNode;
+      const customerNit = rawCustomerNit ? String(rawCustomerNit).trim() : '222222222222';
 
       let invoiceLines = invoiceNode.InvoiceLine || [];
       if (!Array.isArray(invoiceLines)) {
@@ -123,8 +142,10 @@ export class FastXmlParserAdapter implements XmlParserPort {
         taxAmount,
         companyNit,
         companyName,
+        customerNit,
+        customerName,
         items,
-        rawJson: rawJsonExact, // Devolvemos el árbol 100% fiel al XML, con los prefijos y la factura anidada expandida
+        rawJson: rawJsonExact,
       };
     } catch (error: any) {
       this.logger.error('Error parseando el archivo XML', error);

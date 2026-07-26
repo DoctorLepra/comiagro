@@ -42,8 +42,6 @@ export default function Home() {
     },
   });
 
-  const { onAnimationStart: _, ...dropzoneProps } = getRootProps();
-
   const removeFile = (name: string) => {
     setFiles((files) => files.filter((f) => f.name !== name));
   };
@@ -123,22 +121,26 @@ export default function Home() {
 
         {/* Dropzone Area */}
         <motion.div 
-          {...dropzoneProps}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
-          className={`w-full p-12 rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer backdrop-blur-sm flex flex-col items-center justify-center gap-4
-            ${isDragActive ? "border-indigo-500 bg-indigo-500/10" : "border-neutral-800 bg-neutral-900/50 hover:border-neutral-700 hover:bg-neutral-800/50"}
-          `}
+          className="w-full"
         >
-          <input {...getInputProps()} />
+          <div
+            {...getRootProps()}
+            className={`w-full p-12 rounded-3xl border-2 border-dashed transition-all duration-300 cursor-pointer backdrop-blur-sm flex flex-col items-center justify-center gap-4
+              ${isDragActive ? "border-indigo-500 bg-indigo-500/10" : "border-neutral-800 bg-neutral-900/50 hover:border-neutral-700 hover:bg-neutral-800/50"}
+            `}
+          >
+            <input {...getInputProps()} />
           <div className={`p-4 rounded-full transition-colors duration-300 ${isDragActive ? "bg-indigo-500/20 text-indigo-400" : "bg-neutral-800 text-neutral-400"}`}>
             <FileUp className="w-8 h-8" />
           </div>
-          <div className="text-center">
-            <p className="text-lg font-medium text-neutral-200">
-              {isDragActive ? "Suelta tus XML aquí..." : "Arrastra tus XML aquí"}
-            </p>
-            <p className="text-sm text-neutral-500 mt-1">o haz clic para explorar en tus archivos</p>
+            <div className="text-center">
+              <p className="text-lg font-medium text-neutral-200">
+                {isDragActive ? "Suelta los archivos XML aquí..." : "Arrastra y suelta tus facturas XML aquí"}
+              </p>
+              <p className="text-sm text-neutral-500 mt-1">O haz clic para explorar tus archivos</p>
+            </div>
           </div>
         </motion.div>
 

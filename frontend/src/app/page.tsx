@@ -134,11 +134,10 @@ export default function Home() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-CO", {
-      style: "currency",
-      currency: "COP",
-      maximumFractionDigits: 2,
-    }).format(amount);
+    if (typeof amount !== "number" || isNaN(amount)) return "$ 0,00";
+    const parts = amount.toFixed(2).split(".");
+    const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return `$ ${integerPart},${parts[1]}`;
   };
 
   // Totales acumulados

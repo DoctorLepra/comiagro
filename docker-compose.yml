@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: comiagro_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: comiagro_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # El backend y frontend se pueden correr localmente con npm run dev
+  # pero si deseas orquestarlos en Docker para pruebas integrales, aquí está la estructura base:
+  
+  # backend:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     DATABASE_URL: postgresql://postgres:password@db:5432/comiagro_db?schema=public
+  
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "3001:3000"
+  #   environment:
+  #     NEXT_PUBLIC_API_URL: http://localhost:3000
+
+volumes:
+  pgdata:

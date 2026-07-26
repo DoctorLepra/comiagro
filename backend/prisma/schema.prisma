@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique
+  fullName     String?
+  role         String    @default("USER")
+  createdAt    DateTime  @default(now())
+  companies    Company[]
+}
+
+model Company {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  nit       String    @unique
+  name      String
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoices  Invoice[]
+}
+
+model Invoice {
+  id             String    @id @default(uuid()) @db.Uuid
+  companyId      String    @db.Uuid
+  cufe           String    @unique
+  issueDate      DateTime
+  totalAmount    Float
+  taxAmount      Float
+  xmlStorageUrl  String?
+  jsonStorageUrl String?
+  status         String    @default("PENDING") // PENDING, PROCESSED, SENT
+  createdAt      DateTime  @default(now())
+
+  company        Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  items          InvoiceItem[]
+  bmcSubmissions BmcSubmission[]
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid()) @db.Uuid
+  invoiceId   String   @db.Uuid
+  description String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model BmcSubmission {
+  id             String   @id @default(uuid()) @db.Uuid
+  invoiceId      String   @db.Uuid
+  status         String   @default("SENT") // SENT, ACCEPTED, REJECTED
+  responseData   String?
+  submissionDate DateTime @default(now())
+
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}

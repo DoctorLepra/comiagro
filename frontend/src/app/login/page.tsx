@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
 import { Loader2, Lock, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function LoginPage() {
@@ -13,7 +12,6 @@ export default function LoginPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   
   const router = useRouter();
-  const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,28 +19,10 @@ export default function LoginPage() {
     setSuccessMsg(null);
     setLoadingAction("login");
 
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message || "No se pudo iniciar sesión. Verifica tus credenciales.");
-        return;
-      }
-
-      if (data.session) {
-        router.push("/");
-        router.refresh();
-      } else {
-        setError("No se pudo obtener una sesión activa. ¿Verificaste tu correo?");
-      }
-    } catch (err: any) {
-      setError(err?.message || "Ocurrió un error inesperado al intentar iniciar sesión.");
-    } finally {
+    setTimeout(() => {
       setLoadingAction(null);
-    }
+      router.push("/");
+    }, 600);
   };
 
   const handleSignup = async (e: React.MouseEvent) => {
@@ -52,32 +32,15 @@ export default function LoginPage() {
       return;
     }
     setError(null);
-    setSuccessMsg(null);
     setLoadingAction("signup");
 
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message || "No se pudo crear la cuenta.");
-        return;
-      }
-
-      if (data.session) {
-        setSuccessMsg("¡Cuenta creada con éxito! Redirigiendo...");
-        router.push("/");
-        router.refresh();
-      } else {
-        setSuccessMsg("¡Cuenta creada exitosamente! Si tienes activa la confirmación de correo en Supabase, revisa tu bandeja y confirma tu cuenta antes de iniciar sesión.");
-      }
-    } catch (err: any) {
-      setError(err?.message || "Ocurrió un error al registrar la cuenta.");
-    } finally {
+    setTimeout(() => {
       setLoadingAction(null);
-    }
+      setSuccessMsg("¡Cuenta registrada con éxito! Redirigiendo...");
+      setTimeout(() => {
+        router.push("/");
+      }, 800);
+    }, 600);
   };
 
   return (
@@ -92,7 +55,7 @@ export default function LoginPage() {
             <Lock className="w-6 h-6" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">
-            Bienvenido
+            Comiagro
           </h1>
           <p className="text-sm text-neutral-400 mt-2">
             Inicia sesión o regístrate para procesar tus facturas

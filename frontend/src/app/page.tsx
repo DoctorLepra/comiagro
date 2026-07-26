@@ -6,17 +6,13 @@ import { useDropzone } from "react-dropzone";
 import { FileUp, FileCheck2, AlertCircle, Loader2, X, LogOut } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
 
 export default function Home() {
   const [files, setFiles] = useState<File[]>([]);
   const router = useRouter();
-  const supabase = createClient();
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
     router.push("/login");
-    router.refresh();
   };
   const [isUploading, setIsUploading] = useState(false);
   const [results, setResults] = useState<any[]>([]);

@@ -84,10 +84,20 @@ export class FastXmlParserAdapter implements XmlParserPort {
       const taxAmount = parseFloat(taxTotal.TaxAmount?.['#text'] || taxTotal.TaxAmount || '0');
 
       const supplierParty = invoiceNode.AccountingSupplierParty?.Party || {};
-      const companyName = supplierParty.PartyName?.Name || supplierParty.PartyTaxScheme?.RegistrationName || 'Desconocido';
+      const companyName = 
+        supplierParty.PartyName?.Name || 
+        supplierParty.PartyTaxScheme?.RegistrationName || 
+        supplierParty.PartyLegalEntity?.RegistrationName || 
+        'Desconocido';
       
-      const rawNit = supplierParty.PartyIdentification?.ID?.['#text'] || supplierParty.PartyIdentification?.ID || '000000000';
-      const companyNit = String(rawNit);
+      // La DIAN ubica el NIT en cbc:CompanyID dentro de PartyTaxScheme o PartyLegalEntity, o en PartyIdentification.ID
+      const companyIdNode = 
+        supplierParty.PartyTaxScheme?.CompanyID || 
+        supplierParty.PartyLegalEntity?.CompanyID || 
+        supplierParty.PartyIdentification?.ID;
+
+      const rawNit = typeof companyIdNode === 'object' ? (companyIdNode?.['#text'] || companyIdNode?.['#cdata'] || '') : companyIdNode;
+      const companyNit = rawNit ? String(rawNit).trim() : '000000000';
 
       let invoiceLines = invoiceNode.InvoiceLine || [];
       if (!Array.isArray(invoiceLines)) {

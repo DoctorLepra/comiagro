@@ -57,6 +57,28 @@ describe('FastXmlParserAdapter', () => {
     expect(result.items[0].totalPrice).toBe(150000.50);
   });
 
+  it('should extract NIT from cbc:CompanyID inside PartyTaxScheme', async () => {
+    const mockXml = `
+      <Invoice xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2">
+        <cbc:UUID>CUFE-99999</cbc:UUID>
+        <cbc:IssueDate>2026-07-11</cbc:IssueDate>
+        <cac:AccountingSupplierParty>
+          <cac:Party>
+            <cac:PartyTaxScheme>
+              <cbc:RegistrationName font-weight="bold">D1 S A S</cbc:RegistrationName>
+              <cbc:CompanyID schemeID="1" schemeName="31">900276962</cbc:CompanyID>
+            </cac:PartyTaxScheme>
+          </cac:Party>
+        </cac:AccountingSupplierParty>
+      </Invoice>
+    `;
+
+    const result = await adapter.parseInvoice(mockXml);
+
+    expect(result.companyName).toBe('D1 S A S');
+    expect(result.companyNit).toBe('900276962');
+  });
+
   it('should handle XML with missing fields gracefully', async () => {
     const mockXml = `
       <Invoice>

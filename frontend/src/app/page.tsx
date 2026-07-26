@@ -1,4 +1,4 @@
-/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · genre: modern-minimal · theme: Cobalt */
+/* Hallmark · pre-emit critique: P5 H5 E5 S5 R5 V5 · genre: modern-minimal · theme: Cobalt / Light Mode Switchable */
 "use client";
 
 import { useState } from "react";
@@ -20,13 +20,15 @@ import {
   Layers, 
   Sparkles, 
   Database,
-  ChevronRight,
-  FileCode
+  FileCode,
+  Sun,
+  Moon
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
@@ -34,9 +36,12 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<"summary" | "items" | "raw">("summary");
   const [copiedCufe, setCopiedCufe] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
-  const [jsonSearchTerm, setJsonSearchTerm] = useState("");
 
   const router = useRouter();
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   const handleLogout = () => {
     router.push("/login");
@@ -140,41 +145,70 @@ export default function Home() {
   const totalAmountSum = results.reduce((acc, curr) => acc + (curr.invoiceData?.totalAmount || 0), 0);
   const totalTaxSum = results.reduce((acc, curr) => acc + (curr.invoiceData?.taxAmount || 0), 0);
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="min-h-screen bg-[#09090b] text-neutral-100 flex flex-col selection:bg-emerald-500/20 selection:text-emerald-300">
-      <Toaster theme="dark" position="top-right" />
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${
+      isDark ? "bg-[#09090b] text-neutral-100 selection:bg-emerald-500/20 selection:text-emerald-300" : "bg-slate-50 text-slate-900 selection:bg-emerald-500/30 selection:text-emerald-900"
+    }`}>
+      <Toaster theme={isDark ? "dark" : "light"} position="top-right" />
 
       {/* Header / Navbar */}
-      <header className="border-b border-neutral-800/80 bg-neutral-950/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className={`border-b backdrop-blur-xl sticky top-0 z-50 transition-colors duration-300 ${
+        isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-white/80 border-slate-200/80 shadow-xs"
+      }`}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-indigo-600 flex items-center justify-center text-neutral-950 font-bold text-sm shadow-lg shadow-emerald-500/10">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-emerald-500/10">
                 C
               </div>
-              <span className="font-semibold text-lg tracking-tight bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent">
+              <span className={`font-semibold text-lg tracking-tight ${
+                isDark ? "bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent" : "text-slate-900"
+              }`}>
                 Comiagro
               </span>
             </div>
             
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs font-mono text-neutral-400">
+            <div className={`hidden md:flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono transition-colors ${
+              isDark ? "bg-neutral-900 border-neutral-800 text-neutral-400" : "bg-slate-100 border-slate-200 text-slate-600"
+            }`}>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>Motor DIAN UBL 2.1</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-3 text-xs text-neutral-400 font-mono border-r border-neutral-800 pr-4">
-              <span className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5 text-emerald-400" /> Neon PostgreSQL</span>
-              <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-indigo-400" /> Cloudflare R2</span>
+          <div className="flex items-center gap-3">
+            <div className={`hidden sm:flex items-center gap-3 text-xs font-mono border-r pr-3 transition-colors ${
+              isDark ? "text-neutral-400 border-neutral-800" : "text-slate-500 border-slate-200"
+            }`}>
+              <span className="flex items-center gap-1.5"><Database className="w-3.5 h-3.5 text-emerald-500" /> Neon Postgres</span>
+              <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-indigo-500" /> Cloudflare R2</span>
             </div>
+
+            {/* Theme Switcher Button */}
+            <button
+              onClick={toggleTheme}
+              className={`p-2 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                isDark
+                  ? "bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-amber-400"
+                  : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-indigo-600"
+              }`}
+              title={isDark ? "Cambiar a Modo Claro" : "Cambiar a Modo Oscuro"}
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
 
             <button
               onClick={handleLogout}
-              className="px-3.5 py-1.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white text-xs font-medium flex items-center gap-2 transition-all cursor-pointer"
+              className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-2 transition-all cursor-pointer ${
+                isDark 
+                  ? "bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-neutral-300 hover:text-white" 
+                  : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700 hover:text-slate-900"
+              }`}
             >
               <LogOut className="w-3.5 h-3.5" />
-              <span>Cerrar Sesión</span>
+              <span className="hidden sm:inline">Cerrar Sesión</span>
             </button>
           </div>
         </div>
@@ -184,33 +218,39 @@ export default function Home() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 flex flex-col gap-8">
         
         {/* Page Title & Stats Overview */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-neutral-800/60">
+        <div className={`flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b transition-colors ${
+          isDark ? "border-neutral-800/60" : "border-slate-200"
+        }`}>
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mb-3">
+            <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg border text-xs font-medium mb-3 transition-colors ${
+              isDark ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+            }`}>
               <Sparkles className="w-3.5 h-3.5" />
               <span>Procesador Inteligente de Facturas</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+            <h1 className={`text-3xl md:text-4xl font-bold tracking-tight ${isDark ? "text-white" : "text-slate-900"}`}>
               Gestión de Facturación Electrónica
             </h1>
-            <p className="text-sm text-neutral-400 mt-1 max-w-2xl">
+            <p className={`text-sm mt-1 max-w-2xl ${isDark ? "text-neutral-400" : "text-slate-600"}`}>
               Carga tus archivos XML de la DIAN para extraer de forma automática el CUFE, valores fiscales, impuestos y generar la estructura requerida para la Bolsa Mercantil.
             </p>
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-3 gap-3 bg-neutral-900/60 border border-neutral-800/80 p-3 rounded-2xl backdrop-blur-md">
-            <div className="px-3 py-1.5 border-r border-neutral-800">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">Procesados</p>
-              <p className="text-lg font-bold text-white font-mono">{results.length}</p>
+          <div className={`grid grid-cols-3 gap-3 border p-3 rounded-2xl backdrop-blur-md transition-colors ${
+            isDark ? "bg-neutral-900/60 border-neutral-800/80" : "bg-white border-slate-200 shadow-sm"
+          }`}>
+            <div className={`px-3 py-1.5 border-r ${isDark ? "border-neutral-800" : "border-slate-200"}`}>
+              <p className={`text-[10px] font-mono uppercase tracking-wider ${isDark ? "text-neutral-500" : "text-slate-400"}`}>Procesados</p>
+              <p className={`text-lg font-bold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>{results.length}</p>
             </div>
-            <div className="px-3 py-1.5 border-r border-neutral-800">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">Total Acumulado</p>
-              <p className="text-sm font-bold text-emerald-400 font-mono">{formatCurrency(totalAmountSum)}</p>
+            <div className={`px-3 py-1.5 border-r ${isDark ? "border-neutral-800" : "border-slate-200"}`}>
+              <p className={`text-[10px] font-mono uppercase tracking-wider ${isDark ? "text-neutral-500" : "text-slate-400"}`}>Total Acumulado</p>
+              <p className={`text-sm font-bold font-mono ${isDark ? "text-emerald-400" : "text-emerald-600"}`}>{formatCurrency(totalAmountSum)}</p>
             </div>
             <div className="px-3 py-1.5">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-neutral-500">Impuestos (IVA)</p>
-              <p className="text-sm font-bold text-indigo-400 font-mono">{formatCurrency(totalTaxSum)}</p>
+              <p className={`text-[10px] font-mono uppercase tracking-wider ${isDark ? "text-neutral-500" : "text-slate-400"}`}>Impuestos (IVA)</p>
+              <p className={`text-sm font-bold font-mono ${isDark ? "text-indigo-400" : "text-indigo-600"}`}>{formatCurrency(totalTaxSum)}</p>
             </div>
           </div>
         </div>
@@ -221,14 +261,18 @@ export default function Home() {
           {/* Left Column: Dropzone & File Queue (5 cols) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             
-            <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-6 shadow-xl">
+            <div className={`border rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-6 shadow-xl transition-colors ${
+              isDark ? "bg-neutral-900/40 border-neutral-800/80" : "bg-white border-slate-200 shadow-sm"
+            }`}>
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-neutral-200 flex items-center gap-2">
-                  <FileUp className="w-4 h-4 text-emerald-400" />
+                <h2 className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-neutral-200" : "text-slate-800"}`}>
+                  <FileUp className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
                   Cargar Archivos XML
                 </h2>
-                <span className="text-[11px] font-mono text-neutral-500 bg-neutral-950 px-2 py-0.5 rounded border border-neutral-800">
-                  Format: .xml (UBL 2.1)
+                <span className={`text-[11px] font-mono px-2 py-0.5 rounded border transition-colors ${
+                  isDark ? "bg-neutral-950 border-neutral-800 text-neutral-500" : "bg-slate-100 border-slate-200 text-slate-500"
+                }`}>
+                  .xml (UBL 2.1)
                 </span>
               </div>
 
@@ -240,21 +284,25 @@ export default function Home() {
               >
                 <div
                   {...getRootProps()}
-                  className={`w-full p-8 rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-3 text-center
-                    ${isDragActive 
-                      ? "border-emerald-500 bg-emerald-500/10" 
-                      : "border-neutral-800 bg-neutral-950/60 hover:border-neutral-700 hover:bg-neutral-900/60"}
-                  `}
+                  className={`w-full p-8 rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-3 text-center ${
+                    isDragActive 
+                      ? (isDark ? "border-emerald-500 bg-emerald-500/10" : "border-emerald-500 bg-emerald-50")
+                      : (isDark ? "border-neutral-800 bg-neutral-950/60 hover:border-neutral-700 hover:bg-neutral-900/60" : "border-slate-300 bg-slate-50 hover:border-slate-400 hover:bg-slate-100/60")
+                  }`}
                 >
                   <input {...getInputProps()} />
-                  <div className={`p-3.5 rounded-2xl transition-colors ${isDragActive ? "bg-emerald-500/20 text-emerald-400" : "bg-neutral-900 border border-neutral-800 text-neutral-400"}`}>
+                  <div className={`p-3.5 rounded-2xl transition-colors ${
+                    isDragActive 
+                      ? "bg-emerald-500/20 text-emerald-500" 
+                      : (isDark ? "bg-neutral-900 border border-neutral-800 text-neutral-400" : "bg-white border border-slate-200 text-slate-500 shadow-xs")
+                  }`}>
                     <FileUp className="w-6 h-6" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-neutral-200">
+                    <p className={`text-sm font-medium ${isDark ? "text-neutral-200" : "text-slate-800"}`}>
                       {isDragActive ? "Suelta tus facturas aquí..." : "Arrastra tus XMLs de la DIAN aquí"}
                     </p>
-                    <p className="text-xs text-neutral-500 mt-1">O haz clic para explorar tus archivos</p>
+                    <p className={`text-xs mt-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>O haz clic para explorar tus archivos</p>
                   </div>
                 </div>
               </motion.div>
@@ -262,11 +310,11 @@ export default function Home() {
               {/* File Queue */}
               {files.length > 0 && (
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center justify-between text-xs text-neutral-400 font-mono">
+                  <div className={`flex items-center justify-between text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>
                     <span>Cola de Procesamiento ({files.length})</span>
                     <button 
                       onClick={() => setFiles([])}
-                      className="text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
+                      className="hover:text-red-500 transition-colors cursor-pointer"
                     >
                       Limpiar todo
                     </button>
@@ -276,16 +324,18 @@ export default function Home() {
                     {files.map((file, idx) => (
                       <div 
                         key={idx}
-                        className="flex items-center justify-between p-3 rounded-xl bg-neutral-950 border border-neutral-800/80 text-xs"
+                        className={`flex items-center justify-between p-3 rounded-xl border text-xs transition-colors ${
+                          isDark ? "bg-neutral-950 border-neutral-800/80" : "bg-slate-50 border-slate-200"
+                        }`}
                       >
                         <div className="flex items-center gap-2.5 truncate max-w-[80%]">
-                          <FileCode className="w-4 h-4 text-emerald-400 shrink-0" />
-                          <span className="truncate font-medium text-neutral-200">{file.name}</span>
-                          <span className="text-[10px] font-mono text-neutral-500">({(file.size / 1024).toFixed(1)} KB)</span>
+                          <FileCode className={`w-4 h-4 shrink-0 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+                          <span className={`truncate font-medium ${isDark ? "text-neutral-200" : "text-slate-800"}`}>{file.name}</span>
+                          <span className={`text-[10px] font-mono ${isDark ? "text-neutral-500" : "text-slate-400"}`}>({(file.size / 1024).toFixed(1)} KB)</span>
                         </div>
                         <button
                           onClick={() => removeFile(file.name)}
-                          className="text-neutral-500 hover:text-red-400 p-1 transition-colors cursor-pointer"
+                          className="text-neutral-400 hover:text-red-500 p-1 transition-colors cursor-pointer"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>
@@ -296,7 +346,7 @@ export default function Home() {
                   <button
                     onClick={uploadFiles}
                     disabled={isUploading}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-neutral-950 font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/15 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-1"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/15 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-1"
                   >
                     {isUploading ? (
                       <>
@@ -314,10 +364,12 @@ export default function Home() {
               )}
             </div>
 
-            {/* Previously Extracted Items Selector (if multiple) */}
+            {/* Previously Extracted Items Selector */}
             {results.length > 1 && (
-              <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-3xl p-5 backdrop-blur-xl flex flex-col gap-3">
-                <p className="text-xs font-mono text-neutral-400 uppercase tracking-wider">Facturas Extraídas ({results.length})</p>
+              <div className={`border rounded-3xl p-5 backdrop-blur-xl flex flex-col gap-3 transition-colors ${
+                isDark ? "bg-neutral-900/40 border-neutral-800/80" : "bg-white border-slate-200 shadow-sm"
+              }`}>
+                <p className={`text-xs font-mono uppercase tracking-wider ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Facturas Extraídas ({results.length})</p>
                 <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
                   {results.map((res, i) => (
                     <button
@@ -325,8 +377,8 @@ export default function Home() {
                       onClick={() => setSelectedResultIndex(i)}
                       className={`w-full p-2.5 rounded-xl text-xs flex items-center justify-between transition-all cursor-pointer text-left ${
                         selectedResultIndex === i 
-                          ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-medium" 
-                          : "bg-neutral-950/60 border border-neutral-800/60 text-neutral-400 hover:bg-neutral-900"
+                          ? (isDark ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-medium" : "bg-emerald-50 border border-emerald-300 text-emerald-800 font-medium")
+                          : (isDark ? "bg-neutral-950/60 border border-neutral-800/60 text-neutral-400 hover:bg-neutral-900" : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100")
                       }`}
                     >
                       <span className="truncate">{res.invoiceData?.companyName || `Factura ${i+1}`}</span>
@@ -342,17 +394,21 @@ export default function Home() {
           <div className="lg:col-span-7 flex flex-col gap-6">
             
             {currentResult ? (
-              <div className="bg-neutral-900/40 border border-neutral-800/80 rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-6 shadow-xl">
+              <div className={`border rounded-3xl p-6 backdrop-blur-xl flex flex-col gap-6 shadow-xl transition-colors ${
+                isDark ? "bg-neutral-900/40 border-neutral-800/80" : "bg-white border-slate-200 shadow-sm"
+              }`}>
                 
                 {/* Tabs Navigation */}
-                <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
-                  <div className="flex items-center gap-1 bg-neutral-950 p-1 rounded-xl border border-neutral-800">
+                <div className={`flex items-center justify-between border-b pb-4 transition-colors ${isDark ? "border-neutral-800" : "border-slate-200"}`}>
+                  <div className={`flex items-center gap-1 p-1 rounded-xl border transition-colors ${
+                    isDark ? "bg-neutral-950 border-neutral-800" : "bg-slate-100 border-slate-200"
+                  }`}>
                     <button
                       onClick={() => setActiveTab("summary")}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                         activeTab === "summary" 
-                          ? "bg-neutral-800 text-white shadow-sm" 
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? (isDark ? "bg-neutral-800 text-white shadow-xs" : "bg-white text-slate-900 shadow-xs")
+                          : (isDark ? "text-neutral-400 hover:text-neutral-200" : "text-slate-600 hover:text-slate-900")
                       }`}
                     >
                       Resumen Ejecutivo
@@ -361,8 +417,8 @@ export default function Home() {
                       onClick={() => setActiveTab("items")}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                         activeTab === "items" 
-                          ? "bg-neutral-800 text-white shadow-sm" 
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? (isDark ? "bg-neutral-800 text-white shadow-xs" : "bg-white text-slate-900 shadow-xs")
+                          : (isDark ? "text-neutral-400 hover:text-neutral-200" : "text-slate-600 hover:text-slate-900")
                       }`}
                     >
                       Ítems ({currentResult.invoiceData?.items?.length || 0})
@@ -371,8 +427,8 @@ export default function Home() {
                       onClick={() => setActiveTab("raw")}
                       className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                         activeTab === "raw" 
-                          ? "bg-neutral-800 text-white shadow-sm" 
-                          : "text-neutral-400 hover:text-neutral-200"
+                          ? (isDark ? "bg-neutral-800 text-white shadow-xs" : "bg-white text-slate-900 shadow-xs")
+                          : (isDark ? "text-neutral-400 hover:text-neutral-200" : "text-slate-600 hover:text-slate-900")
                       }`}
                     >
                       RAW JSON DIAN
@@ -385,10 +441,14 @@ export default function Home() {
                         href={currentResult.jsonUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-1.5 rounded-xl bg-neutral-950 hover:bg-neutral-800 border border-neutral-800 text-xs font-medium text-neutral-300 flex items-center gap-1.5 transition-all"
+                        className={`px-3 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-all ${
+                          isDark 
+                            ? "bg-neutral-950 hover:bg-neutral-800 border-neutral-800 text-neutral-300" 
+                            : "bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-700"
+                        }`}
                       >
-                        <Download className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Cloudflare R2 JSON</span>
+                        <Download className={`w-3.5 h-3.5 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
+                        <span>R2 JSON</span>
                       </a>
                     )}
                   </div>
@@ -399,49 +459,69 @@ export default function Home() {
                   <div className="flex flex-col gap-6">
                     {/* Header Party Card */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-2xl bg-neutral-950/80 border border-neutral-800/80 flex flex-col gap-1">
-                        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider flex items-center gap-1">
-                          <Building2 className="w-3 h-3 text-emerald-400" /> Emisor / Proveedor
+                      <div className={`p-4 rounded-2xl border flex flex-col gap-1 transition-colors ${
+                        isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
+                      }`}>
+                        <span className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
+                          <Building2 className={`w-3 h-3 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} /> Emisor / Proveedor
                         </span>
-                        <p className="text-sm font-semibold text-white truncate">{currentResult.invoiceData?.companyName}</p>
-                        <p className="text-xs font-mono text-neutral-400">NIT: {currentResult.invoiceData?.companyNit}</p>
+                        <p className={`text-sm font-semibold truncate ${isDark ? "text-white" : "text-slate-900"}`}>{currentResult.invoiceData?.companyName}</p>
+                        <p className={`text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>NIT: {currentResult.invoiceData?.companyNit}</p>
                       </div>
 
-                      <div className="p-4 rounded-2xl bg-neutral-950/80 border border-neutral-800/80 flex flex-col gap-1">
-                        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider flex items-center gap-1">
-                          <Receipt className="w-3 h-3 text-indigo-400" /> Fecha de Emisión
+                      <div className={`p-4 rounded-2xl border flex flex-col gap-1 transition-colors ${
+                        isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
+                      }`}>
+                        <span className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
+                          <Receipt className={`w-3 h-3 ${isDark ? "text-indigo-400" : "text-indigo-600"}`} /> Fecha de Emisión
                         </span>
-                        <p className="text-sm font-semibold text-white">{currentResult.invoiceData?.issueDate}</p>
-                        <p className="text-xs font-mono text-neutral-400">Estado: Validada por DIAN</p>
+                        <p className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{currentResult.invoiceData?.issueDate}</p>
+                        <p className={`text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Estado: Validada por DIAN</p>
                       </div>
                     </div>
 
                     {/* CUFE Bar */}
-                    <div className="p-4 rounded-2xl bg-neutral-950/80 border border-neutral-800/80 flex flex-col gap-2">
+                    <div className={`p-4 rounded-2xl border flex flex-col gap-2 transition-colors ${
+                      isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
+                    }`}>
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-mono text-neutral-500 uppercase tracking-wider">CUFE (Código Único de Factura Electrónica)</span>
+                        <span className={`text-[10px] font-mono uppercase tracking-wider ${isDark ? "text-neutral-500" : "text-slate-500"}`}>CUFE (Código Único de Factura Electrónica)</span>
                         <button
                           onClick={() => copyToClipboard(currentResult.invoiceData?.cufe, "cufe")}
-                          className="text-xs text-neutral-400 hover:text-emerald-400 flex items-center gap-1 font-mono transition-colors cursor-pointer"
+                          className={`text-xs flex items-center gap-1 font-mono transition-colors cursor-pointer ${
+                            isDark ? "text-neutral-400 hover:text-emerald-400" : "text-slate-600 hover:text-emerald-600"
+                          }`}
                         >
-                          {copiedCufe ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedCufe ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{copiedCufe ? "Copiado" : "Copiar CUFE"}</span>
                         </button>
                       </div>
-                      <p className="font-mono text-xs text-emerald-300/90 break-all bg-neutral-900/80 p-2.5 rounded-xl border border-neutral-800">
+                      <p className={`font-mono text-xs break-all p-2.5 rounded-xl border ${
+                        isDark 
+                          ? "bg-neutral-900/80 border-neutral-800 text-emerald-300" 
+                          : "bg-white border-slate-200 text-emerald-800"
+                      }`}>
                         {currentResult.invoiceData?.cufe}
                       </p>
                     </div>
 
                     {/* Financial Totals Cards */}
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/30 to-neutral-950 border border-emerald-500/20 flex flex-col gap-1">
-                        <span className="text-xs text-emerald-400 font-medium">Valor Total Factura</span>
-                        <p className="text-2xl font-bold text-white font-mono">{formatCurrency(currentResult.invoiceData?.totalAmount || 0)}</p>
+                      <div className={`p-5 rounded-2xl border flex flex-col gap-1 ${
+                        isDark 
+                          ? "bg-gradient-to-br from-emerald-950/30 to-neutral-950 border-emerald-500/20" 
+                          : "bg-emerald-50/60 border-emerald-200"
+                      }`}>
+                        <span className={`text-xs font-medium ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>Valor Total Factura</span>
+                        <p className={`text-2xl font-bold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>{formatCurrency(currentResult.invoiceData?.totalAmount || 0)}</p>
                       </div>
-                      <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/30 to-neutral-950 border border-indigo-500/20 flex flex-col gap-1">
-                        <span className="text-xs text-indigo-400 font-medium">Total Impuestos (IVA)</span>
-                        <p className="text-2xl font-bold text-white font-mono">{formatCurrency(currentResult.invoiceData?.taxAmount || 0)}</p>
+                      <div className={`p-5 rounded-2xl border flex flex-col gap-1 ${
+                        isDark 
+                          ? "bg-gradient-to-br from-indigo-950/30 to-neutral-950 border-indigo-500/20" 
+                          : "bg-indigo-50/60 border-indigo-200"
+                      }`}>
+                        <span className={`text-xs font-medium ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>Total Impuestos (IVA)</span>
+                        <p className={`text-2xl font-bold font-mono ${isDark ? "text-white" : "text-slate-900"}`}>{formatCurrency(currentResult.invoiceData?.taxAmount || 0)}</p>
                       </div>
                     </div>
                   </div>
@@ -450,9 +530,11 @@ export default function Home() {
                 {/* Tab 2: Items Table */}
                 {activeTab === "items" && (
                   <div className="flex flex-col gap-4">
-                    <div className="overflow-x-auto rounded-2xl border border-neutral-800 bg-neutral-950/60">
+                    <div className={`overflow-x-auto rounded-2xl border ${isDark ? "border-neutral-800 bg-neutral-950/60" : "border-slate-200 bg-slate-50"}`}>
                       <table className="w-full text-left text-xs">
-                        <thead className="bg-neutral-900/80 text-neutral-400 font-mono text-[11px] uppercase border-b border-neutral-800">
+                        <thead className={`font-mono text-[11px] uppercase border-b ${
+                          isDark ? "bg-neutral-900/80 text-neutral-400 border-neutral-800" : "bg-slate-100 text-slate-600 border-slate-200"
+                        }`}>
                           <tr>
                             <th className="p-3">#</th>
                             <th className="p-3">Descripción</th>
@@ -461,14 +543,14 @@ export default function Home() {
                             <th className="p-3 text-right">Total</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-neutral-800/60 text-neutral-300">
+                        <tbody className={`divide-y ${isDark ? "divide-neutral-800/60 text-neutral-300" : "divide-slate-200 text-slate-700"}`}>
                           {currentResult.invoiceData?.items?.map((item: any, i: number) => (
-                            <tr key={i} className="hover:bg-neutral-900/40 transition-colors">
-                              <td className="p-3 font-mono text-neutral-500">{i + 1}</td>
-                              <td className="p-3 font-medium text-white">{item.description}</td>
+                            <tr key={i} className={`transition-colors ${isDark ? "hover:bg-neutral-900/40" : "hover:bg-slate-100/70"}`}>
+                              <td className={`p-3 font-mono ${isDark ? "text-neutral-500" : "text-slate-400"}`}>{i + 1}</td>
+                              <td className={`p-3 font-medium ${isDark ? "text-white" : "text-slate-900"}`}>{item.description}</td>
                               <td className="p-3 text-right font-mono">{item.quantity}</td>
                               <td className="p-3 text-right font-mono">{formatCurrency(item.unitPrice)}</td>
-                              <td className="p-3 text-right font-mono text-emerald-400 font-semibold">{formatCurrency(item.totalPrice)}</td>
+                              <td className={`p-3 text-right font-mono font-semibold ${isDark ? "text-emerald-400" : "text-emerald-700"}`}>{formatCurrency(item.totalPrice)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -480,19 +562,29 @@ export default function Home() {
                 {/* Tab 3: Raw JSON Inspector */}
                 {activeTab === "raw" && (
                   <div className="flex flex-col gap-3">
-                    <div className="flex items-center justify-between gap-4 bg-neutral-950 p-2 rounded-xl border border-neutral-800">
-                      <span className="text-xs font-mono text-neutral-400 pl-2">Árbol JSON Completo (Estructura DIAN Exacta)</span>
+                    <div className={`flex items-center justify-between gap-4 p-2 rounded-xl border ${
+                      isDark ? "bg-neutral-950 border-neutral-800" : "bg-slate-100 border-slate-200"
+                    }`}>
+                      <span className={`text-xs font-mono pl-2 ${isDark ? "text-neutral-400" : "text-slate-600"}`}>Árbol JSON Completo (Estructura DIAN Exacta)</span>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => copyToClipboard(JSON.stringify(currentResult.invoiceData?.rawJson || currentResult, null, 2), "json")}
-                          className="px-3 py-1 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-xs font-mono text-neutral-300 flex items-center gap-1.5 transition-all cursor-pointer border border-neutral-800"
+                          className={`px-3 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer border ${
+                            isDark 
+                              ? "bg-neutral-900 hover:bg-neutral-800 border-neutral-800 text-neutral-300" 
+                              : "bg-white hover:bg-slate-50 border-slate-200 text-slate-700 shadow-xs"
+                          }`}
                         >
-                          {copiedJson ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                          {copiedJson ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                           <span>{copiedJson ? "Copiado" : "Copiar JSON"}</span>
                         </button>
                         <button
                           onClick={() => downloadJson(currentResult.invoiceData?.rawJson || currentResult, `factura-${currentResult.invoiceData?.cufe?.slice(0, 8)}`)}
-                          className="px-3 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-mono text-emerald-400 flex items-center gap-1.5 transition-all cursor-pointer border border-emerald-500/20"
+                          className={`px-3 py-1 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-all cursor-pointer border ${
+                            isDark 
+                              ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20" 
+                              : "bg-emerald-600 text-white hover:bg-emerald-700 border-emerald-600"
+                          }`}
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>Descargar .json</span>
@@ -500,7 +592,11 @@ export default function Home() {
                       </div>
                     </div>
 
-                    <div className="max-h-96 overflow-y-auto p-4 rounded-2xl bg-neutral-950 border border-neutral-800 font-mono text-xs text-neutral-300 leading-relaxed">
+                    <div className={`max-h-96 overflow-y-auto p-4 rounded-2xl border font-mono text-xs leading-relaxed ${
+                      isDark 
+                        ? "bg-neutral-950 border-neutral-800 text-neutral-300" 
+                        : "bg-slate-900 border-slate-800 text-emerald-400"
+                    }`}>
                       <pre className="whitespace-pre-wrap break-all">
                         {JSON.stringify(currentResult.invoiceData?.rawJson || currentResult, null, 2)}
                       </pre>
@@ -510,13 +606,19 @@ export default function Home() {
               </div>
             ) : (
               /* Empty State when no invoice processed yet */
-              <div className="bg-neutral-900/30 border border-dashed border-neutral-800/80 rounded-3xl p-12 backdrop-blur-xl flex flex-col items-center justify-center text-center gap-4 min-h-[400px]">
-                <div className="w-12 h-12 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center text-neutral-500">
+              <div className={`border border-dashed rounded-3xl p-12 backdrop-blur-xl flex flex-col items-center justify-center text-center gap-4 min-h-[400px] transition-colors ${
+                isDark 
+                  ? "bg-neutral-900/30 border-neutral-800/80" 
+                  : "bg-white/60 border-slate-300 shadow-xs"
+              }`}>
+                <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${
+                  isDark ? "bg-neutral-900 border-neutral-800 text-neutral-500" : "bg-slate-100 border-slate-200 text-slate-400"
+                }`}>
                   <Layers className="w-6 h-6" />
                 </div>
                 <div className="max-w-sm">
-                  <h3 className="text-base font-semibold text-neutral-200">Panel de Inspección Vacío</h3>
-                  <p className="text-xs text-neutral-500 mt-1">
+                  <h3 className={`text-base font-semibold ${isDark ? "text-neutral-200" : "text-slate-800"}`}>Panel de Inspección Vacío</h3>
+                  <p className={`text-xs mt-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
                     Carga uno o más archivos XML de la DIAN en el panel izquierdo para visualizar la extracción en tiempo real.
                   </p>
                 </div>

@@ -368,7 +368,7 @@ export default function Home() {
               <div className={`border rounded-3xl p-5 backdrop-blur-xl flex flex-col gap-3 transition-colors ${
                 isDark ? "bg-neutral-900/40 border-neutral-800/80" : "bg-white border-slate-200 shadow-sm"
               }`}>
-                <p className={`text-xs font-mono uppercase tracking-wider ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Facturas Extraídas ({results.length})</p>
+                <p className={`text-xs font-mono uppercase tracking-wider ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Documentos Extraídos ({results.length})</p>
                 <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto pr-1">
                   {results.map((res, i) => (
                     <button
@@ -380,7 +380,18 @@ export default function Home() {
                           : (isDark ? "bg-neutral-950/60 border border-neutral-800/60 text-neutral-400 hover:bg-neutral-900" : "bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100")
                       }`}
                     >
-                      <span className="truncate">{res.invoiceData?.companyName || `Factura ${i+1}`}</span>
+                      <div className="flex items-center gap-2 truncate max-w-[70%]">
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold shrink-0 ${
+                          res.invoiceData?.documentType === "NOTA_DEBITO" 
+                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" 
+                            : res.invoiceData?.documentType === "NOTA_CREDITO"
+                            ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                            : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                        }`}>
+                          {res.invoiceData?.documentType === "NOTA_DEBITO" ? "ND" : res.invoiceData?.documentType === "NOTA_CREDITO" ? "NC" : "FE"}
+                        </span>
+                        <span className="truncate">{res.invoiceData?.companyName || `Documento ${i+1}`}</span>
+                      </div>
                       <span className="font-mono text-[11px] shrink-0">{formatCurrency(res.invoiceData?.totalAmount || 0)}</span>
                     </button>
                   ))}
@@ -472,9 +483,24 @@ export default function Home() {
                         <div className={`p-4 rounded-2xl border flex flex-col gap-1 transition-colors ${
                           isDark ? "bg-neutral-950/80 border-neutral-800/80" : "bg-slate-50 border-slate-200"
                         }`}>
-                          <span className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
-                            <Receipt className={`w-3 h-3 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} /> Fecha de Emisión
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className={`text-[10px] font-mono uppercase tracking-wider flex items-center gap-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>
+                              <Receipt className={`w-3 h-3 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} /> Tipo de Documento
+                            </span>
+                            {currentResult.invoiceData?.documentType === "NOTA_DEBITO" ? (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                                NOTA DÉBITO
+                              </span>
+                            ) : currentResult.invoiceData?.documentType === "NOTA_CREDITO" ? (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">
+                                NOTA CRÉDITO
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                FACTURA ELECTRÓNICA
+                              </span>
+                            )}
+                          </div>
                           <p className={`text-sm font-semibold ${isDark ? "text-white" : "text-slate-900"}`}>{currentResult.invoiceData?.issueDate}</p>
                           <p className={`text-xs font-mono ${isDark ? "text-neutral-400" : "text-slate-500"}`}>Estado: Validada DIAN</p>
                         </div>

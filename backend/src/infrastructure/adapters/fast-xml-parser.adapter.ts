@@ -37,7 +37,17 @@ export class FastXmlParserAdapter implements XmlParserPort {
         throw new Error('Formato XML inválido o ilegible.');
       }
 
+      let documentType: 'FACTURA_ELECTRONICA' | 'NOTA_DEBITO' | 'NOTA_CREDITO' = 'FACTURA_ELECTRONICA';
       let invoiceNode = jsonObj.Invoice;
+
+      if (jsonObj.DebitNote) {
+        invoiceNode = jsonObj.DebitNote;
+        documentType = 'NOTA_DEBITO';
+      } else if (jsonObj.CreditNote) {
+        invoiceNode = jsonObj.CreditNote;
+        documentType = 'NOTA_CREDITO';
+      }
+
       let rawJsonExact = this.rawParser.parse(xmlContent); // Parseo fiel al XML
 
       // Procesar el Contenedor DIAN (AttachedDocument)
@@ -45,15 +55,24 @@ export class FastXmlParserAdapter implements XmlParserPort {
         const attachedDoc = jsonObj.AttachedDocument;
         const descriptionCdata = attachedDoc.Attachment?.ExternalReference?.Description;
 
-        // Si existe una factura anidada en el CDATA, la extraemos para los datos "core"
-        if (descriptionCdata && typeof descriptionCdata === 'string' && descriptionCdata.includes('<Invoice')) {
+        // Si existe un documento anidado en el CDATA, lo extraemos para los datos "core"
+        if (descriptionCdata && typeof descriptionCdata === 'string') {
           const nestedJson = this.parser.parse(descriptionCdata);
-          invoiceNode = nestedJson.Invoice;
+
+          if (nestedJson.DebitNote || descriptionCdata.includes('<DebitNote')) {
+            invoiceNode = nestedJson.DebitNote || nestedJson;
+            documentType = 'NOTA_DEBITO';
+          } else if (nestedJson.CreditNote || descriptionCdata.includes('<CreditNote')) {
+            invoiceNode = nestedJson.CreditNote || nestedJson;
+            documentType = 'NOTA_CREDITO';
+          } else if (nestedJson.Invoice || descriptionCdata.includes('<Invoice')) {
+            invoiceNode = nestedJson.Invoice || nestedJson;
+            documentType = 'FACTURA_ELECTRONICA';
+          }
 
           // Hacemos lo mismo para el rawJsonExact: Reemplazamos el string gigante por el árbol JSON real respetando namespaces
           const nestedRawJson = this.rawParser.parse(descriptionCdata);
           
-          // Navegamos por el rawJsonExact para encontrar dónde inyectarlo (cuidando los prefijos)
           if (rawJsonExact.AttachedDocument) {
              const extRef = rawJsonExact.AttachedDocument['cac:Attachment']?.['cac:ExternalReference'];
              if (extRef && extRef['cbc:Description']) {
@@ -71,14 +90,35 @@ export class FastXmlParserAdapter implements XmlParserPort {
         throw new Error('Formato XML inválido o ilegible.');
       }
 
+      // Si el objeto detectado tiene el nodo raíz adentro (ej: nestedJson = { DebitNote: {...} })
+      if (invoiceNode.DebitNote) {
+        invoiceNode = invoiceNode.DebitNote;
+        documentType = 'NOTA_DEBITO';
+      } else if (invoiceNode.CreditNote) {
+        invoiceNode = invoiceNode.CreditNote;
+        documentType = 'NOTA_CREDITO';
+      } else if (invoiceNode.Invoice) {
+        invoiceNode = invoiceNode.Invoice;
+        documentType = 'FACTURA_ELECTRONICA';
+      }
+
+      // Detectar documentType por ProfileID si aún no está definido
+      const profileIdStr = String(invoiceNode.ProfileID?.['#text'] || invoiceNode.ProfileID || '');
+      if (profileIdStr.toLowerCase().includes('nota debito') || profileIdStr.toLowerCase().includes('nota débito')) {
+        documentType = 'NOTA_DEBITO';
+      } else if (profileIdStr.toLowerCase().includes('nota credito') || profileIdStr.toLowerCase().includes('nota crédito')) {
+        documentType = 'NOTA_CREDITO';
+      }
+
       const rawCufe = invoiceNode.UUID?.['#text'] || invoiceNode.UUID || 'CUFE_NO_ENCONTRADO';
       const cufe = typeof rawCufe === 'string' ? rawCufe : 'CUFE_NO_ENCONTRADO';
       
       const rawDate = invoiceNode.IssueDate?.['#text'] || invoiceNode.IssueDate || new Date().toISOString();
       const issueDate = typeof rawDate === 'string' ? rawDate : new Date().toISOString();
       
-      const legalMonetaryTotal = invoiceNode.LegalMonetaryTotal || {};
-      const totalAmount = parseFloat(legalMonetaryTotal.PayableAmount?.['#text'] || legalMonetaryTotal.PayableAmount || '0');
+      // Totales Monetarios (LegalMonetaryTotal para Factura, RequestedMonetaryTotal para Nota Débito)
+      const monetaryTotal = invoiceNode.LegalMonetaryTotal || invoiceNode.RequestedMonetaryTotal || {};
+      const totalAmount = parseFloat(monetaryTotal.PayableAmount?.['#text'] || monetaryTotal.PayableAmount || '0');
       
       const taxTotal = invoiceNode.TaxTotal || {};
       const taxAmount = parseFloat(taxTotal.TaxAmount?.['#text'] || taxTotal.TaxAmount || '0');
@@ -118,7 +158,8 @@ export class FastXmlParserAdapter implements XmlParserPort {
       const rawCustomerNit = typeof customerIdNode === 'object' ? (customerIdNode?.['#text'] || customerIdNode?.['#cdata'] || '') : customerIdNode;
       const customerNit = rawCustomerNit ? String(rawCustomerNit).trim() : '222222222222';
 
-      let invoiceLines = invoiceNode.InvoiceLine || [];
+      // Líneas de detalle (InvoiceLine, DebitNoteLine o CreditNoteLine)
+      let invoiceLines = invoiceNode.InvoiceLine || invoiceNode.DebitNoteLine || invoiceNode.CreditNoteLine || [];
       if (!Array.isArray(invoiceLines)) {
         invoiceLines = [invoiceLines];
       }
@@ -126,10 +167,11 @@ export class FastXmlParserAdapter implements XmlParserPort {
       const items: InvoiceItemData[] = invoiceLines.map((line: any) => {
         const item = line.Item || {};
         const price = line.Price || {};
+        const quantityVal = line.InvoicedQuantity || line.DebitedQuantity || line.CreditedQuantity || line.Quantity || '0';
         
         return {
           description: item.Description || 'Sin descripción',
-          quantity: parseFloat(line.InvoicedQuantity?.['#text'] || line.InvoicedQuantity || '0'),
+          quantity: parseFloat(typeof quantityVal === 'object' ? (quantityVal?.['#text'] || '0') : String(quantityVal)),
           unitPrice: parseFloat(price.PriceAmount?.['#text'] || price.PriceAmount || '0'),
           totalPrice: parseFloat(line.LineExtensionAmount?.['#text'] || line.LineExtensionAmount || '0'),
         };
@@ -144,6 +186,7 @@ export class FastXmlParserAdapter implements XmlParserPort {
         companyName,
         customerNit,
         customerName,
+        documentType,
         items,
         rawJson: rawJsonExact,
       };

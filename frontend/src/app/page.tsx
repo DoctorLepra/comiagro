@@ -28,7 +28,7 @@ import { Toaster, toast } from "sonner";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [results, setResults] = useState<any[]>([]);

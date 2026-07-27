@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Lock, Mail, AlertCircle, CheckCircle2, ShieldCheck, Sun, Moon } from "lucide-react";
 
 export default function LoginPage() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loadingAction, setLoadingAction] = useState<"login" | "signup" | null>(null);

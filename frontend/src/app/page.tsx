@@ -48,15 +48,24 @@ export default function Home() {
   };
 
   const onDrop = (acceptedFiles: File[]) => {
-    const xmlFiles = acceptedFiles.filter(
-      (file) => file.type === "text/xml" || file.type === "application/xml" || file.name.endsWith(".xml")
-    );
-    
-    if (xmlFiles.length !== acceptedFiles.length) {
-      toast.error("Algunos archivos fueron descartados porque no tienen extensión .xml");
+    const validFiles = acceptedFiles.filter((file) => {
+      const name = file.name.toLowerCase();
+      return (
+        file.type === "text/xml" ||
+        file.type === "application/xml" ||
+        name.endsWith(".xml") ||
+        name.endsWith(".xlsx") ||
+        name.endsWith(".xls") ||
+        file.type.includes("spreadsheetml") ||
+        file.type.includes("excel")
+      );
+    });
+
+    if (validFiles.length !== acceptedFiles.length) {
+      toast.error("Algunos archivos fueron descartados. Solo se admiten formatos .xml y .xlsx / .xls");
     }
-    
-    setFiles((prev) => [...prev, ...xmlFiles]);
+
+    setFiles((prev) => [...prev, ...validFiles]);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -64,6 +73,8 @@ export default function Home() {
     accept: {
       "text/xml": [".xml"],
       "application/xml": [".xml"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+      "application/vnd.ms-excel": [".xls"],
     },
   });
 
@@ -74,7 +85,7 @@ export default function Home() {
   const uploadFiles = async () => {
     if (files.length === 0) return;
     setIsUploading(true);
-    
+
     try {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
@@ -94,10 +105,18 @@ export default function Home() {
       });
 
       const responses = await Promise.all(uploadPromises);
-      const extractedData = responses.map(r => r.data);
+      const extractedData: any[] = [];
+      responses.forEach((r) => {
+        if (r.isExcel && Array.isArray(r.dataList)) {
+          r.dataList.forEach((item: any) => extractedData.push(item));
+        } else if (r.data) {
+          extractedData.push(r.data);
+        }
+      });
+
       setResults(extractedData);
       setSelectedResultIndex(0);
-      toast.success(`¡${extractedData.length} factura(s) procesada(s) con éxito!`);
+      toast.success(`¡${extractedData.length} documento(s) procesado(s) con éxito!`);
       setFiles([]);
     } catch (error: any) {
       toast.error(error.message || "Ocurrió un error al procesar las facturas.");
@@ -266,12 +285,12 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <h2 className={`text-sm font-semibold flex items-center gap-2 ${isDark ? "text-neutral-200" : "text-slate-800"}`}>
                   <FileUp className={`w-4 h-4 ${isDark ? "text-emerald-400" : "text-emerald-600"}`} />
-                  Cargar Archivos XML
+                  Cargar Archivos XML o Excel
                 </h2>
                 <span className={`text-[11px] font-mono px-2 py-0.5 rounded border transition-colors ${
                   isDark ? "bg-neutral-950 border-neutral-800 text-neutral-500" : "bg-slate-100 border-slate-200 text-slate-500"
                 }`}>
-                  .xml (UBL 2.1)
+                  .xml / .xlsx (32 cols)
                 </span>
               </div>
 
@@ -299,9 +318,9 @@ export default function Home() {
                   </div>
                   <div>
                     <p className={`text-sm font-medium ${isDark ? "text-neutral-200" : "text-slate-800"}`}>
-                      {isDragActive ? "Suelta tus facturas aquí..." : "Arrastra tus XMLs de la DIAN aquí"}
+                      {isDragActive ? "Suelta tus archivos aquí..." : "Arrastra tus XMLs de la DIAN o tu plantilla Excel aquí"}
                     </p>
-                    <p className={`text-xs mt-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>O haz clic para explorar tus archivos</p>
+                    <p className={`text-xs mt-1 ${isDark ? "text-neutral-500" : "text-slate-500"}`}>Formatos compatibles: .xml, .xlsx y .xls</p>
                   </div>
                 </div>
               </motion.div>

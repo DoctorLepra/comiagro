@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { InvoiceController } from './presentation/controllers/invoice.controller';
 import { ParseInvoiceXmlUseCase } from './application/use-cases/parse-invoice-xml.use-case';
+import { ParseInvoiceExcelUseCase } from './application/use-cases/parse-invoice-excel.use-case';
 import { FastXmlParserAdapter } from './infrastructure/adapters/fast-xml-parser.adapter';
+import { XlsxParserAdapter } from './infrastructure/adapters/xlsx-parser.adapter';
 import { XML_PARSER_PORT } from './domain/ports/xml-parser.port';
 import { CloudflareR2Adapter } from './infrastructure/adapters/cloudflare-r2.adapter';
 import { STORAGE_PORT } from './domain/ports/storage.port';
@@ -10,6 +12,8 @@ import { STORAGE_PORT } from './domain/ports/storage.port';
   controllers: [InvoiceController],
   providers: [
     ParseInvoiceXmlUseCase,
+    ParseInvoiceExcelUseCase,
+    XlsxParserAdapter,
     {
       provide: XML_PARSER_PORT,
       useClass: FastXmlParserAdapter,

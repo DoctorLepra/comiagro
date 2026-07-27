@@ -88,13 +88,6 @@ export default function LoginPage() {
             C
           </div>
 
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-mono mb-3 transition-colors ${
-            isDark ? "bg-neutral-950 border-neutral-800 text-neutral-400" : "bg-slate-100 border-slate-200 text-slate-600"
-          }`}>
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Motor de Facturación DIAN</span>
-          </div>
-
           <h1 className={`text-2xl font-bold tracking-tight ${
             isDark ? "bg-gradient-to-r from-white via-neutral-200 to-neutral-400 bg-clip-text text-transparent" : "text-slate-900"
           }`}>

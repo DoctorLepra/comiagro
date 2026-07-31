@@ -91,7 +91,15 @@ export default function Home() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+        const getApiUrl = () => {
+          if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+          if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
+            return "";
+          }
+          return "http://localhost:3001";
+        };
+
+        const apiUrl = getApiUrl();
         const response = await fetch(`${apiUrl}/invoices/upload`, {
           method: "POST",
           body: formData,
